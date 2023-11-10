@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather</title>
+    <link rel="stylesheet" href="https://assets.dougdragon.com/uikit.css">
+    <script src="https://assets.dougdragon.com/uikit.js"></script>
+</head>
+<body>
+    <h1 class="uk-text-center">Current weather in:</h1>
+    <div class="uk-text-center">
+        <h2>
+            <span id="location"><div id="spinner" class="uk-icon uk-spinner" uk-spinner="ratio: 0.5"></div></span>
+        </h2>
+    </div>
+    <div class="uk-text-center">
+        <h3>
+            <span id="temp"></span><div id="tempSpinner" class="uk-icon uk-spinner" uk-spinner="ratio: 0.5" style="display: none;"></div>
+            <div class="uk-text-center">
+                <span id="condition"></span><br />
+                <span id="conditionIcon"></span>
+            </div>
+        </h3>
+    </div>
+    </div>
+    <script>
+        const spinnerElement = document.getElementById('spinner');
+        const weatherSpinnerElement = document.getElementById('tempSpinner');
+        fetch("https://api.dougdragon.com/ip/")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                return response.json();
+            })
+            .then(data => {
+                const ipAddress = data['ipAddress'];
+
+                const geoUrl = `https://api.dougdragon.com/geolocation/?ip=${ipAddress}`;
+                fetch(geoUrl)
+                    .then(resp => resp.json())
+                    .then(geoData => {
+                        if (geoData.message) {
+                            console.log('geoData error: ', geoData.message);
+                        } else {
+                            const {city, state_prov} = geoData;
+                            document.getElementById('location').innerText = `${city}, ${state_prov}`;
+                            spinnerElement.style.display = 'none;'
+                            weatherSpinnerElement.style.display = '';
+                            
+                            const zipCode = geoData['zipcode'];
+
+                            const getWeatherUrl = `https://api.dougdragon.com/weatherapi/?zipCode=${zipCode}`;
+                            fetch(getWeatherUrl)
+                                .then(resp => {
+                                    if (!resp.ok) {
+                                        throw new Error('Network response was not ok');
+                                    }
+
+                                    return resp.json();
+                                })
+                                .then(weatherData => {
+                                    console.log('DEBUG: ', weatherData);
+                                    const { temp_f, feelslike_f, condition } = weatherData['current'];
+                                    const htmlWeatherElement = `${temp_f} F (<span class="uk-text-italic uk-text-light">Feels like: ${feelslike_f}</span>)`;
+                                    document.getElementById('temp').innerHTML = htmlWeatherElement;
+                                    const { icon, text } = condition;
+                                    document.getElementById('conditionIcon').innerHTML = `<img src="https:${condition.icon}">`;
+                                    document.getElementById('condition').textContent = text;
+                                    weatherSpinnerElement.style.display = 'none';
+
+                                })
+                                .catch(error => console.log('There was an error getting weatherData: '. error));
+                        }
+                    })
+                    .catch(error => console.log('There was an error getting geoData: ', error));
+            })
+            .catch(error => console.log('There was an error getting IP: ', error));
+    </script>
+</body>
+</html>
