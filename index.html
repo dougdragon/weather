@@ -50,7 +50,7 @@
                             document.getElementById('location').innerText = `${city}, ${state_prov}`;
                             spinnerElement.style.display = 'none'
                             weatherSpinnerElement.style.display = '';
-                            
+
                             const zipCode = geoData['zipcode'];
 
                             const getWeatherUrl = `https://api.dougdragon.com/weatherapi/?zipCode=${zipCode}`;
@@ -61,7 +61,7 @@
                                     const htmlWeatherElement = `${temp_f} F (<span class="uk-text-italic uk-text-light">Feels like: ${feelslike_f}</span>)`;
                                     document.getElementById('temp').innerHTML = htmlWeatherElement;
                                     const { icon, text } = condition;
-                                    document.getElementById('conditionIcon').innerHTML = `<img src="https:${condition.icon}">`;
+                                    document.getElementById('conditionIcon').innerHTML = `<img src="https:${condition.icon}" title="${text}">`;
                                     document.getElementById('condition').textContent = text;
                                     weatherSpinnerElement.style.display = 'none';
                                 })
